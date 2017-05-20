@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -22,6 +23,7 @@ var isLeader bool = false
 func main() {
 	leaderFlagPtr := flag.Bool("leader", false, "join as leader")
 	versionFlagPtr := flag.Bool("version", false, "print version")
+	verboseFlagPtr := flag.Bool("verbose", false, "print debugging information")
 
 	flag.Parse()
 
@@ -30,12 +32,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	if !*verboseFlagPtr {
+		log.SetFlags(0)
+		log.SetOutput(ioutil.Discard)
+	}
+
 	isLeader = *leaderFlagPtr
 
 	// Resolve multicast addr
 	addr, err := net.ResolveUDPAddr("udp4", multicastAddr)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("ResolveUDPAddr failed:", err)
 	}
 
 	if isLeader {
@@ -54,7 +61,7 @@ func main() {
 func tickTime(addr *net.UDPAddr) {
 	c, err := net.DialUDP("udp", nil, addr)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("DialUDP failed:", err)
 	}
 
 	t := time.Tick(1000 * time.Millisecond)
@@ -67,7 +74,7 @@ func tickTime(addr *net.UDPAddr) {
 func listenMulticast(addr *net.UDPAddr) {
 	l, err := net.ListenMulticastUDP("udp4", nil, addr)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("ListenMulticastUDP failed:", err)
 	}
 	l.SetReadBuffer(maxDatagramSize)
 
