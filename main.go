@@ -12,13 +12,15 @@ import (
 	"time"
 )
 
+import (
+	"github.com/hypebeast/go-osc/osc"
+)
+
 const (
 	Version         = "0.1.0"
 	multicastAddr   = "225.0.0.1:5000"
 	maxDatagramSize = 8192
 )
-
-var isLeader bool = false
 
 func main() {
 	leaderFlagPtr := flag.Bool("leader", false, "join as leader")
@@ -37,13 +39,19 @@ func main() {
 		log.SetOutput(ioutil.Discard)
 	}
 
-	isLeader = *leaderFlagPtr
+	isLeader := *leaderFlagPtr
 
+	start(isLeader)
+}
+
+func start(isLeader bool) {
 	// Resolve multicast addr
 	addr, err := net.ResolveUDPAddr("udp4", multicastAddr)
 	if err != nil {
 		log.Fatal("ResolveUDPAddr failed:", err)
 	}
+
+	client := osc.NewClient("localhost", 57120)
 
 	if isLeader {
 		log.Println("Joined as leader")
@@ -55,7 +63,9 @@ func main() {
 	}
 
 	fmt.Println("temposyncd started")
-	listenMulticast(addr)
+
+	// Listen to broadcasts
+	listenMulticast(addr, client)
 }
 
 func tickTime(addr *net.UDPAddr) {
@@ -71,7 +81,7 @@ func tickTime(addr *net.UDPAddr) {
 	}
 }
 
-func listenMulticast(addr *net.UDPAddr) {
+func listenMulticast(addr *net.UDPAddr, client *osc.Client) {
 	l, err := net.ListenMulticastUDP("udp4", nil, addr)
 	if err != nil {
 		log.Fatal("ListenMulticastUDP failed:", err)
@@ -84,11 +94,18 @@ func listenMulticast(addr *net.UDPAddr) {
 		if err != nil {
 			log.Fatal("ReadFromUDP failed:", err)
 		}
-		msgHandler(src, n, b)
+		msgHandler(src, n, b, client)
 	}
 }
 
-func msgHandler(src *net.UDPAddr, n int, b []byte) {
+func msgHandler(src *net.UDPAddr, n int, b []byte, client *osc.Client) {
 	log.Println(n, "bytes read from", src)
 	log.Println(hex.Dump(b[:n]))
+
+	// Send OSC /tick message
+	msg := osc.NewMessage("/temposync/tick")
+	msg.Append("ts")
+	msg.Append(uint64(n))
+	client.Send(msg)
+	log.Printf("Sent 'ts %v' to /temposync/tick", time.Now())
 }
