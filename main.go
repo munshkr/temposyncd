@@ -74,7 +74,7 @@ func tickTime(addr *net.UDPAddr) {
 		log.Fatal("DialUDP failed:", err)
 	}
 
-	t := time.Tick(1000 * time.Millisecond)
+	t := time.Tick(250 * time.Millisecond)
 	for now := range t {
 		log.Printf("TICK %v\n", now)
 		c.Write([]byte("hello!\n"))
@@ -104,8 +104,6 @@ func msgHandler(src *net.UDPAddr, n int, b []byte, client *osc.Client) {
 
 	// Send OSC /tick message
 	msg := osc.NewMessage("/temposync/tick")
-	msg.Append("ts")
-	msg.Append(uint64(n))
 	client.Send(msg)
 	log.Printf("Sent 'ts %v' to /temposync/tick", time.Now())
 }
