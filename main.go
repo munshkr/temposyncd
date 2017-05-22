@@ -136,8 +136,8 @@ func msgHandler(src *net.UDPAddr, n int, b []byte, client *osc.Client) {
 
 	// Send OSC /tick message
 	msg := osc.NewMessage("/temposync/tick")
-	msg.Append(state.Bps)
-	msg.Append(state.Beats)
+	msg.Append(int32(state.Bps))
+	msg.Append(int32(state.Beats))
 	log.Printf("OSC message to /temposync/tick: %v", msg)
 	client.Send(msg)
 }
