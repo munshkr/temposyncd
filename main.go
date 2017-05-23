@@ -1,8 +1,6 @@
 package main
 
 import (
-	"bytes"
-	"encoding/gob"
 	"encoding/hex"
 	"flag"
 	"fmt"
@@ -22,16 +20,11 @@ const (
 	Version         = "0.1.0"
 	multicastAddr   = "225.0.0.1:5000"
 	maxDatagramSize = 8192
-	ticksPerBeat    = 1
+	ticksPerBeat    = 4
 )
 
-type ClockState struct {
-	Bps   float64
-	Beats int64
-}
-
 var isLeader = false
-var state = ClockState{2.0, 0}
+var state = Clock{1.0, 0, 0}
 
 func main() {
 	leaderFlagPtr := flag.Bool("leader", false, "join as leader")
@@ -87,19 +80,18 @@ func tickTime(addr *net.UDPAddr) {
 
 	// FIXME Bps changes
 	// This Tick should be replaced by something else...
-	t := time.Tick(time.Duration(1000/state.Bps) * time.Millisecond)
+	ticksPerSec := state.Bps * ticksPerBeat
+	t := time.Tick(time.Duration(1000/ticksPerSec) * time.Millisecond)
+
 	for now := range t {
 		log.Printf("TICK %v\n", now)
-		state.Beats++
 
-		buf := new(bytes.Buffer)
-		enc := gob.NewEncoder(buf)
-
-		err := enc.Encode(state)
-		if err != nil {
-			log.Fatal("enc.Encode failed:", err)
+		state.Ticks++
+		if state.Ticks%ticksPerBeat == 0 {
+			state.Beats++
 		}
-		c.Write(buf.Bytes())
+
+		state.Encode(c)
 	}
 }
 
@@ -126,12 +118,7 @@ func msgHandler(src *net.UDPAddr, n int, b []byte, client *osc.Client) {
 
 	if !isLeader {
 		// Update state from received message
-		buf := bytes.NewBuffer(b)
-		dec := gob.NewDecoder(buf)
-		err := dec.Decode(&state)
-		if err != nil {
-			log.Fatal("dec.Decode failed:", err)
-		}
+		state.Decode(b)
 	}
 
 	// Send OSC /tick message
