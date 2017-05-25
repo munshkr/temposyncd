@@ -5,7 +5,7 @@ Reliable music tempo synchronization over the network.
 Please note this is a *work in progress*. See [DESIGN.md](DESIGN.md) to know
 more about how this *would* work.
 
-Client implementations:
+### Client implementations:
 * [Supercollider](https://github.com/munshkr/temposync-sc)
 
 ## Install
