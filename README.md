@@ -30,6 +30,19 @@ temposyncd
 
 You can see more logging information with `--verbose`
 
+## Development
+
+1. Clone the repository
+2. Install dependencies
+```
+go get github.com/hypebeast/go-osc/osc
+```
+3. Build and run
+```
+go build
+./temposyncd -verbose -leader
+```
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at
