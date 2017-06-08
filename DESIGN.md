@@ -13,7 +13,7 @@
 * It should allow any machine to enter or exit the *stage* at any given time
   while clock is running, and keep everyone in sync.
 
-## Descriptions
+## Short description
 
 ### Version 0.1
 
