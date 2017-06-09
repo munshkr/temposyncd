@@ -12,6 +12,8 @@
   them could be elected as the Tempo Leader.
 * It should allow any machine to enter or exit the *stage* at any given time
   while clock is running, and keep everyone in sync.
+* Users should be able to quantize tempo or transport changes (i.e. change tempo
+  at the next beat).
 
 ## Short description
 
