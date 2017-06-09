@@ -8,7 +8,7 @@
   time offsets are relevant.
 * To reliably work over a local-area network (LAN) should be the priority, as
   most live musical events are local performances.
-* **Decentralized*: All processes should be identical, and at any time one of
+* **Decentralized**: All processes should be identical, and at any time one of
   them could be elected as the Tempo Leader.
 * It should allow any machine to enter or exit the *stage* at any given time
   while clock is running, and keep everyone in sync.
